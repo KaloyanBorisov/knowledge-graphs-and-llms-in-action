@@ -88,6 +88,12 @@ Output files: `analysis/louvain_cluster_analysis_plot.png` and `analysis/pharma_
 
 ## Other biomedical graphs queried in the chapter (listings only)
 
+The chapter's main idea is multisource integration: the PPI network is combined with disease data, and larger
+biomedical graphs (Hetionet for drug-disease-gene pathways, CKG for clinical knowledge) are queried to reveal
+connections that no single source shows. The results can then be interpreted with the help of an LLM.
+
+![Multisource integration: building biomedical knowledge graphs](images/Summary.png)
+
 These are Cypher listings in `listings/`, not driven by the Python code:
 
 - **Hetionet** (4.16): `CREATE DATABASE hetionet` from a seed backup.
