@@ -12,7 +12,7 @@ observing the environment, using domain data and learning from user interaction.
 built top-down around the functional task the advisor must perform, not by integrating every available data
 source bottom-up.
 
-![Architecting intelligent advisor systems: a hybrid approach](Summary_ch01.png)
+![Architecting intelligent advisor systems: a hybrid approach](images/Summary_ch01.png)
 
 ## Knowledge graphs vs. LLMs
 
@@ -27,7 +27,7 @@ and language understanding, and LLMs can in turn extract entities and relationsh
 the KG up to date (the subject of the later chapters on building graphs with LLMs). Domain experts guide the target
 schema and evaluate the system's outputs.
 
-![Hybrid intelligent systems: combining knowledge graphs and LLMs](Summary_ch02.png)
+![Hybrid intelligent systems: combining knowledge graphs and LLMs](images/Summary_ch02.png)
 
 ## The listings
 

@@ -1,6 +1,6 @@
 # Chapter 4: more complex knowledge graphs - biomedical examples
 
-![Chapter 4 overview](ch04_overview.png)
+![Chapter 4 overview](images/ch04_overview.png)
 
 
 ## Getting started

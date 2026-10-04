@@ -1,6 +1,6 @@
 # Chapter 3: create your first knowledge graph from ontologies
 
-![Chapter 3 overview](ch03_overview.png)
+![Chapter 3 overview](images/ch03_overview.png)
 
 This chapter builds a knowledge graph of rare diseases and their symptoms from the
 [Human Phenotype Ontology (HPO)](https://hpo.jax.org). The ontology itself (phenotype terms and their hierarchy)
@@ -15,7 +15,7 @@ Neosemantics (n10s) is needed because the ontology is published as RDF (triples)
 property graph. The plugin converts between the two: `hp.owl` is first loaded as RDF and later reshaped into plain
 nodes and relationships.
 
-![RDF vs. LPG](RDF_vs._LPG.png)
+![RDF vs. LPG](images/RDF_vs._LPG.png)
 
 ### Install requirements
 This chapter's `Makefile` assumes you have a virtual environment folder called `venv` 
@@ -48,7 +48,7 @@ The import has two stages: ontology ingestion with Neosemantics (steps 3-5), the
 annotation data (steps 6-10). The resulting graph supports symptom-to-disease matching and inference over the
 phenotype hierarchy (listings 3.28-3.31).
 
-![Building a healthcare knowledge graph from ontologies](summerize.png)
+![Building a healthcare knowledge graph from ontologies](images/summerize.png)
 
 `HPOImporter` (in [importer/import_hpo.py](importer/import_hpo.py)) calls its methods in this order. The `hpo`
 database is created in the constructor. The listing numbers are the book's.
