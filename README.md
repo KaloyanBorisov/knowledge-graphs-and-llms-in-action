@@ -44,6 +44,7 @@ For further information refere to the Readme.md available in each chapter's dire
 
 | Chapter | Guide | Highlights |
 |---------|-------|------------|
+| 2 | [chapters/ch02/Readme.md](chapters/ch02/Readme.md) | Knowledge graphs and LLMs (no code): [KGs vs. LLMs](chapters/ch02/Readme.md#knowledge-graphs-vs-llms), [recap of intelligent advisor systems](chapters/ch02/Readme.md#background-intelligent-advisor-systems-recap-of-chapter-1), [example prompts](chapters/ch02/Readme.md#the-listings) |
 | 3 | [chapters/ch03/Readme.md](chapters/ch03/Readme.md) | HPO knowledge graph from an ontology: [overview diagram](chapters/ch03/ch03_overview.png), [importer steps](chapters/ch03/Readme.md#what-the-importer-does), [Cypher listings](chapters/ch03/Readme.md#the-cypher-listings), [Docker setup](chapters/ch03/Readme.md#docker) |
 | 4 | [chapters/ch04/Readme.md](chapters/ch04/Readme.md) | Protein-interaction graph and community analysis: [overview diagram](chapters/ch04/ch04_overview.png), [analysis algorithm](chapters/ch04/Readme.md#the-analysis-algorithm-in-detail), [Cypher listings](chapters/ch04/Readme.md#the-cypher-listings), [Docker setup](chapters/ch04/Readme.md#docker) |
 | 5 | [chapters/ch05/Readme.md](chapters/ch05/Readme.md) | Build a knowledge graph from structured sources: install, [download and import the datasets](chapters/ch05/Readme.md#download-the-datasets), [reconcile diseases](chapters/ch05/Readme.md#reconcile-diseases), [notes for Mac users](chapters/ch05/Readme.md#notes-for-mac-users) |
