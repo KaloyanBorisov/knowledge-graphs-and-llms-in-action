@@ -39,3 +39,10 @@ brew install make
 ```
 
 For further information refere to the Readme.md available in each chapter's directory
+
+### Chapter guides
+
+| Chapter | Guide | Highlights |
+|---------|-------|------------|
+| 3 | [chapters/ch03/Readme.md](chapters/ch03/Readme.md) | HPO knowledge graph from an ontology: [overview diagram](chapters/ch03/ch03_overview.png), [importer steps](chapters/ch03/Readme.md#what-the-importer-does), [Cypher listings](chapters/ch03/Readme.md#the-cypher-listings), [Docker setup](chapters/ch03/Readme.md#docker) |
+| 4 | [chapters/ch04/Readme.md](chapters/ch04/Readme.md) | Protein-interaction graph and community analysis: [overview diagram](chapters/ch04/ch04_overview.png), [analysis algorithm](chapters/ch04/Readme.md#the-analysis-algorithm-in-detail), [Cypher listings](chapters/ch04/Readme.md#the-cypher-listings), [Docker setup](chapters/ch04/Readme.md#docker) |
