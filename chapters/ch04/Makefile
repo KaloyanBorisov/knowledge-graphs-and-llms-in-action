@@ -10,5 +10,5 @@ import:
 
 analysis:
 	PYTHONPATH=../../ $(PYTHON) analysis/louvain_cluster_analysis.py
-	PYTHONPATH=../../ $(PYTHON) analysis/pharma_analysis.py
+	PYTHONPATH=../../ $(PYTHON) analysis/multiomic_analysis.py
 
