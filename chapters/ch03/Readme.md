@@ -8,18 +8,14 @@ is loaded as RDF with the Neosemantics (n10s) plugin. The disease-to-phenotype a
 tab-separated file. The whole import is done by one script, `importer/import_hpo.py`, which runs one Cypher
 statement per step.
 
-![Building a healthcare knowledge graph from ontologies](summerize.png)
-
-### Background: RDF vs. labeled property graphs
-
-The ontology is stored as RDF (triples), while Neo4j is a labeled property graph. Neosemantics converts between
-the two, which is why the import first loads `hp.owl` as RDF and later reshapes it into plain nodes and
-relationships.
-
-![RDF vs. LPG](RDF_vs._LPG.png)
-
 ## Getting started
 The code provided in this chapter requires that you have installed the Neosemantics plugin in your Neo4j instance.
+
+Neosemantics (n10s) is needed because the ontology is published as RDF (triples), while Neo4j is a labeled
+property graph. The plugin converts between the two: `hp.owl` is first loaded as RDF and later reshaped into plain
+nodes and relationships.
+
+![RDF vs. LPG](RDF_vs._LPG.png)
 
 ### Install requirements
 This chapter's `Makefile` assumes you have a virtual environment folder called `venv` 
@@ -47,6 +43,12 @@ is pinned because n10s 5.26.0 crashes on newer 5.26.x patches. Enterprise is nee
 The data ends up in a database called `hpo` (browse it at http://localhost:7474).
 
 ## What the importer does
+
+The import has two stages: ontology ingestion with Neosemantics (steps 3-5), then integration of the disease
+annotation data (steps 6-10). The resulting graph supports symptom-to-disease matching and inference over the
+phenotype hierarchy (listings 3.28-3.31).
+
+![Building a healthcare knowledge graph from ontologies](summerize.png)
 
 `HPOImporter` (in [importer/import_hpo.py](importer/import_hpo.py)) calls its methods in this order. The `hpo`
 database is created in the constructor. The listing numbers are the book's.
