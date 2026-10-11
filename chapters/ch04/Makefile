@@ -12,3 +12,13 @@ analysis:
 	PYTHONPATH=../../ $(PYTHON) analysis/louvain_cluster_analysis.py
 	PYTHONPATH=../../ $(PYTHON) analysis/multiomic_analysis.py
 
+
+.PHONY: up down reset
+up:
+	docker compose up --build
+
+down:
+	docker compose down
+
+reset:
+	docker compose down -v

@@ -147,11 +147,38 @@ The infographic explains the idea behind listings 4.17-4.19:
 
 ```shell
 cp .env.example .env   # set NEO4J_PASSWORD (8+ characters)
-docker compose up --build
+docker compose up --build    # or: make up
 ```
 
-Runs Neo4j (with GDS), restores the `ppi` seed, computes WCC/Louvain communities, and writes the analysis
-plots into `analysis/`.
+Needs Docker Compose v2, internet access (GDS plugin and the PPI backup are downloaded on first start) and about 4 GB RAM.
+Four containers run in order, each waiting for the previous one:
+
+| Service | What it does | Lifetime |
+|---|---|---|
+| `neo4j` | Neo4j 5.26.4 Enterprise with the GDS plugin; healthcheck gates the rest | keeps running |
+| `importer` | [import_seed.py](importer/import_seed.py): `CREATE DATABASE ppi ... seedUri` (listing 4.6) | exits |
+| `prepare` | [prepare_gds.sh](prepare_gds.sh): waits for `ppi`, then listings 4.7-4.10 (label, project, WCC, Louvain) | exits |
+| `analysis` | runs `louvain_cluster_analysis.py` then `multiomic_analysis.py`, writes plots into `analysis/` | exits |
+
+Measured on a clean first run: restore and GDS take a few minutes, `louvain_cluster_analysis.py` about 2.5 minutes and
+`multiomic_analysis.py` about 20 minutes (it prints nothing while it loops over the diseases). Open
+http://localhost:7474, log in as `neo4j` and select the `ppi` database to run the listings by hand.
+
+| Command | Effect |
+|---|---|
+| `docker compose logs -f importer prepare analysis` | follow a stage |
+| `docker compose up neo4j -d` | database only |
+| `docker compose run --rm analysis` | rerun only the plots |
+| `make down` | stop, keep data |
+| `make reset` | stop and delete the `neo4j_data` volume |
+
+Notes:
+
+- Enterprise is required for `CREATE DATABASE` and `seedUri`, not for the plugins. Reruns are safe (`IF NOT EXISTS`, and the
+  projection is dropped and recreated).
+- The image is pinned to `5.26.4` to match the version the backup was made with. ch03 stays on `5.26.0` because of n10s.
+- Louvain is not deterministic, so the community count varies slightly between runs (44-46 seen).
+- Plots are written by the container as root. Hetionet and CKG (listings 4.16, 4.20) are not loaded automatically.
 
 ## The Cypher listings
 

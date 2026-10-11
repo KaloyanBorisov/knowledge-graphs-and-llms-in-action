@@ -5,6 +5,9 @@ run() { cypher-shell -a "$NEO4J_URI" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" -d "$
 
 echo "waiting for the ppi database (seed restore)..."
 until [ "$(run system "SHOW DATABASE ppi YIELD currentStatus RETURN currentStatus" 2>/dev/null | tail -n1)" = '"online"' ]; do
+  if [ -n "$(run system "SHOW DATABASE ppi YIELD statusMessage WHERE statusMessage <> '' RETURN statusMessage" 2>/dev/null | tail -n +2)" ]; then
+    echo "ppi seed restore failed:"; run system "SHOW DATABASE ppi YIELD currentStatus, statusMessage"; exit 1
+  fi
   sleep 5
 done
 

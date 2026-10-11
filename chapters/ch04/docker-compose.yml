@@ -2,7 +2,7 @@
 # Pipeline: neo4j -> importer (restore ppi seed) -> prepare (listings 4.7-4.10) -> analysis (plots in ./analysis)
 services:
   neo4j:
-    image: neo4j:5.26.0-enterprise   # Enterprise is needed for CREATE DATABASE
+    image: neo4j:5.26.4-enterprise   # >= the 5.26.4 version the seed backups were made with. Enterprise is needed for CREATE DATABASE / seedUri
     environment:
       NEO4J_ACCEPT_LICENSE_AGREEMENT: "eval"
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}
@@ -11,10 +11,12 @@ services:
       NEO4J_dbms_security_procedures_unrestricted: "gds.*"
       NEO4J_dbms_security_procedures_allowlist: "gds.*"
       NEO4J_dbms_databases_seed__from__uri__providers: "URLConnectionSeedProvider"
+      NEO4J_server_memory_heap_initial__size: "2G"
       NEO4J_server_memory_heap_max__size: "2G"
+      NEO4J_server_memory_pagecache_size: "1G"
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
     volumes:
       - neo4j_data:/data
     healthcheck:
@@ -36,7 +38,7 @@ services:
       NEO4J_PASSWORD: ${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}
 
   prepare:
-    image: neo4j:5.26.0-enterprise   # reused only for cypher-shell
+    image: neo4j:5.26.4-enterprise   # reused only for cypher-shell
     entrypoint: ["/bin/bash", "/prepare_gds.sh"]
     volumes:
       - ./prepare_gds.sh:/prepare_gds.sh:ro
