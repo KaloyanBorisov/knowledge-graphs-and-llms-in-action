@@ -1,14 +1,17 @@
 PIP=../../venv/bin/pip
 PYTHON=../../venv/bin/python
 
+OPENAI_KEY="your OPENAI API key"
+OPENAI_BASE_URL="https://api.openai.com/v1"
+OPENAI_MODEL="gpt-4o-mini"
+
+
 init:
 	$(PIP) install -r requirements.lock
-	$(PYTHON) -m spacy download en_core_web_sm
 
 import:
-	PYTHONPATH=../../ $(PYTHON) importer/step1__import_bbc.py
-	PYTHONPATH=../../ $(PYTHON) importer/step2__enrich_organizations.py
-	PYTHONPATH=../../ $(PYTHON) importer/step3__enrich_by_ownerships.py
+	OPENAI_KEY=$(OPENAI_KEY) OPENAI_BASE_URL=$(OPENAI_BASE_URL) OPENAI_MODEL=$(OPENAI_MODEL) PYTHONPATH=../../ \
+	$(PYTHON) importer/ingest_and_process.py
 
 
 

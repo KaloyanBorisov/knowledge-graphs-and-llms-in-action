@@ -1,10 +1,40 @@
-# Node Classification and Link Prediction with GNNs
-Graph Neural Networks (GNNs) is a powerful approach to analyzing complex relationships in data. This collection of notebooks demonstrates how PyTorch Geometric (PyG) can be leveraged for real-world tasks, such as anti-money laundering and recommendation systems. The code from Chapter 14 can be directly tested on Google `colab` using the following links:
+## Question Answering System using LangGraph and Streamlit
 
-* [Node Classification in Bitcoin Using PyG for Anti-Money Laundering](https://colab.research.google.com/drive/1qfXnnojBuQO_EEDPQS_gEkmhwwCll7Wo?usp=sharing)
+### Getting started
 
-This notebook explores node classification in the Bitcoin transaction network. The goal is to detect illicit transactions associated with money laundering using GNNs. By leveraging PyG, we classify nodes as either licit or illicit based on their transactional behavior.
+#### Install requirements
+This chapter's `Makefile` assumes you have a virtual environment folder called `venv` 
+at the repository root folder. You can edit the`Makefile` and redefine the `PIP` variable
+at the first line to match your configuration.
+```shell
+make init
+```
 
-* [Link Prediction in MovieLens Using PyG for Recommendation Systems](https://colab.research.google.com/drive/1uWqwZUlG66hxYl3w_-vntDuW4CubrVsU?usp=sharing)
+#### Download the investigative graph 
+Run this command to initialize the graph content in your Neo4j database."
+```shell
+make import
+```
+To provide extra information such as the name of the database, set the environment variables accordingly to the makefile
+```shell
+NEO4J_DATABASE=mydb make import
+```
+will create a graph database named `mydb` for example
 
-This notebook explores link prediction in the MovieLens dataset to improve recommendation systems. Using PyG, we predict potential user-movie interactions, helping to build personalized movie recommendations.
+#### Launch the application
+To execute the Streamlit-based application, run the following command:
+```shell
+make app
+```
+Make sure to set the relevant environment variables for both the Neo4j database and the AI provider:
+```shell
+NEO4J_DATABASE=mydb \
+AZURE_OPENAI_API_KEY=xyz \
+AZURE_OPENAI_API_VERSION=abc \
+AZURE_OPENAI_DEPLOYMENT=model-name \
+AZURE_OPENAI_ENDPOINT=https://mydomain.openai.azure.com/ \
+make app
+```
+This will set up an Azure-based GPT model as the AI provider and will use the `mydb` graph as the database.
+
+To switch AI providers, refer to `chains/investigator.py`, which contains examples of configurations for other AI providers.

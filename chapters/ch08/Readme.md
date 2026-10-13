@@ -1,8 +1,37 @@
-## Building knowledge graphs with Large Language Models
+# NED with Open LLMs and Domain Ontologies
 
-### Getting started
+## Getting started
+To construct the Knowledge Graph, you need the SNOMED ontology, which is available through the Unified Medical Language System (UMLS) platform.
 
-#### Install requirements
+To access these files, follow these steps:
+
+1. Sign in at UMLS Login using one of the available identity providers, such as Google or Microsoft: https://uts.nlm.nih.gov/uts/login.
+2. After authentication, retrieve your API key by clicking on "*Get Your API Key*".
+3. Copy the API key into the `Makefile`.
+
+For more details on programmatic access, refer to the official documentation: https://documentation.uts.nlm.nih.gov/automating-downloads.html.
+
+## Neo4j settings
+This chapter has been tested with Neo4j version `5.20` with the APOC and GDS plugins.
+
+You have to update the Neo4j settings as follows:
+
+```bash
+dbms.memory.heap.initial_size=2G
+dbms.memory.heap.max_size=4G
+```
+
+## Ollama settings
+To locally run the Llama 3.1 8B model, you have to download the Ollama tool from: https://ollama.com/download/mac.
+
+After the installation process, to dowload and serve the model you can run the following commands: 
+
+```bash
+ollama pull llama3.1:latest
+ollama serve
+```
+
+## Install requirements
 This chapter's `Makefile` assumes you have a virtual environemnt folder called `venv` 
 at the reopository root folder. You can edit the`Makefile` and redefine the `PIP` variable
 at the first line to match your configuration.
@@ -10,21 +39,14 @@ at the first line to match your configuration.
 make init
 ```
 
-#### Import the datasets
-Run this command to execute the importer code for each dataset.
+## Download the SNOMED ontology
+Downloading the SNOMED ontology requires to create an API key on the UMLS platform.
 ```shell
-make import
+make init
 ```
 
-##### Cached LLM responses
-
-Once loaded, diary entries are processed using OpenAI ChatGPT by default. 
-The responses from ChatGPT are cached in the `data/cached_llm`  folder to avoid executing the same prompt multiple
-times and incurring additional costs. 
-This caching mechanism is enabled by default, and a populated version of the cache is included in this Git repository, 
-allowing the entire process to run even without a valid OpenAI key.
-
-The caching mechanism is simple and tied to the name of the diary page identifier. 
-If the model or prompt is changed since the last time the cache was populated, the cache will not be invalidated, 
-and unmodified responses may be used. 
-In such scenarios, it is sufficient to remove the contents of the cache folder or copy them to another location.
+## Perform disambiguation
+To run the disambiguation pipeline, you can use the following command:
+```shell
+make disambiguate
+```

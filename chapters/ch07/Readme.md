@@ -33,7 +33,7 @@ Create an ephemeral container called venv_ch5:
 
 ```bash
 docker run -e NEO4J_URI=bolt://host.docker.internal:7687 -e PYTHONPATH=../../ \
-       -w /work/chapters/ch09 -d -it --name venv_ch9 -v $PWD/../../:/work python:3.9-slim
+       -w /work/chapters/ch07 -d -it --name venv_ch9 -v $PWD/../../:/work python:3.9-slim
 ```
 This command assumes you'll use a Neo4j instance running on your local machine. 
 The container will mount this repository under `/work` and set the working directory accordingly.

@@ -1,4 +1,4 @@
-## Knowledge graphs and natural language processing
+## Building knowledge graphs with Large Language Models
 
 ### Getting started
 
@@ -11,27 +11,20 @@ make init
 ```
 
 #### Import the datasets
-Run this command to execute the importer code.
+Run this command to execute the importer code for each dataset.
 ```shell
 make import
 ```
 
-##### Cached requests
+##### Cached LLM responses
 
-During the enrichment steps, many requests are made to the Wikidata REST API. 
-As do any public APIs, the Wikidata REST API has certain rate limits in place to prevent misuse and abuse. 
-To be considerate of these limits, the enrichment steps include important throttling mechanisms that slow down the process.
+Once loaded, diary entries are processed using OpenAI ChatGPT by default. 
+The responses from ChatGPT are cached in the `data/cached_llm`  folder to avoid executing the same prompt multiple
+times and incurring additional costs. 
+This caching mechanism is enabled by default, and a populated version of the cache is included in this Git repository, 
+allowing the entire process to run even without a valid OpenAI key.
 
-To mitigate this performance issue while still maintaining some flexibility, responses from Wikidata API requests are cached 
-so that each request is issued at most once. 
-Afterward, the cached file representing the response is used instead. 
-This behavior is enabled by default and the cached responses are available in this Git repository. 
-As a result, even the first time the process runs, it will use the cached Wikidata responses, resulting in quick execution.
-
-This behavior can be overridden by simply removing one or more JSON files in the `cache_org` and/or the `cache_owners` 
-subfolder of the `data` folder.
-
-Please note that using the cached responses provided in this repository does not guarantee that not a single request will 
-be issued to the Wikidata API. 
-The output of the Spacy pipeline may differ slightly depending on the model version used, 
-and it is possible that entities that are not cached may be added.
+The caching mechanism is simple and tied to the name of the diary page identifier. 
+If the model or prompt is changed since the last time the cache was populated, the cache will not be invalidated, 
+and unmodified responses may be used. 
+In such scenarios, it is sufficient to remove the contents of the cache folder or copy them to another location.
