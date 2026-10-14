@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ch05_b Mind Map</title>
+<style>
+:root{--bg:#f4f5f7;--fg:#1d2024;--l0:#d9d6f0;--l1:#e2e5ea;--l2:#d3e8d9;--l3:#d6e4f5;--line:#8a8fd0;--btn:#fff;--bd:#c3c7cf}
+@media(prefers-color-scheme:dark){:root{--bg:#202428;--fg:#f1f3f4;--l0:#4b4b6b;--l1:#3c4350;--l2:#2c3f35;--l3:#2b3c52;--line:#8c8fe0;--btn:#3a414c;--bd:#555c68}}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;overflow:hidden}
+#view{position:absolute;inset:0;cursor:grab;touch-action:none}#view.drag{cursor:grabbing}
+#stage{position:absolute;left:0;top:0;transform-origin:0 0}
+svg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+path{fill:none;stroke:var(--line);stroke-width:1.5}
+.node{position:absolute;box-sizing:border-box;height:42px;padding:0 14px;display:flex;align-items:center;border-radius:6px;font-size:15px;white-space:nowrap;user-select:none}
+.node.d0{background:var(--l0)}.node.d1{background:var(--l1)}.node.d2{background:var(--l2)}.node.d3,.node.d4,.node.d5{background:var(--l3)}
+.tg{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--btn);border:1px solid var(--bd);color:var(--fg);font-size:12px;line-height:18px;text-align:center;cursor:pointer}
+#ctl{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;border:1px solid var(--bd);background:var(--btn)}
+#ctl button{width:52px;height:48px;border:0;background:none;color:var(--fg);font-size:22px;cursor:pointer}
+#ctl button+button{border-top:1px solid var(--bd)}
+#ttl{position:fixed;left:16px;top:12px;font-size:14px;opacity:.7}
+</style></head><body>
+<div id="ttl">Extracting Domain Knowledge from Unstructured Data</div>
+<div id="view"><div id="stage"><svg id="svg"></svg></div></div>
+<div id="ctl"><button id="all" title="Expand / collapse all">&#8597;</button><button id="zi">+</button><button id="zo">&minus;</button><button id="fit" title="Fit">&#9974;</button></div>
+<script>
+const DATA = {"name": "Extracting Domain Knowledge from Unstructured Data", "children": [{"name": "Knowledge Extraction Core Concepts", "children": [{"name": "Knowledge Representation", "children": [{"name": "Modeled information for autonomous access"}, {"name": "Organized and connected structured view"}]}, {"name": "Knowledge Learning", "children": [{"name": "Mines insights from documents"}, {"name": "Combines NLP and LLMs"}]}, {"name": "Primary Tasks", "children": [{"name": "Named Entity Recognition (NER)"}, {"name": "Relation Extraction (RE)"}]}]}, {"name": "The Archives Challenge (Use Case)", "children": [{"name": "Rockefeller Archive Center (RAC) Data"}, {"name": "Unstructured Historical Documents & Diaries"}, {"name": "Goal", "children": [{"name": "Understand grant-making processes"}, {"name": "Track research funding patterns and trends"}]}, {"name": "Data Extraction Challenges", "children": [{"name": "Shortcuts, abbreviations, and initials"}, {"name": "Domain-specific nomenclature"}, {"name": "Coreference resolution requirements"}]}]}, {"name": "LLMs for Knowledge Graph Building", "children": [{"name": "Advantages of Generative Models", "children": [{"name": "Transfer learning reduces data labeling needs"}, {"name": "Implicit coreference resolution"}, {"name": "Implicit entity normalization and expansion"}, {"name": "Single-pass extraction pipeline"}]}, {"name": "Methodologies", "children": [{"name": "Prompt-based Inference (Zero-shot / One-shot)"}, {"name": "Fine-tuning LLMs"}]}, {"name": "Key Limitations", "children": [{"name": "Hallucinations"}, {"name": "Prediction Instability"}]}]}, {"name": "Prompt Engineering Best Practices", "children": [{"name": "Iterative Prompt Development"}, {"name": "Clear Task Description & Domain Context"}, {"name": "Explicit Class Definitions (Entities & Relations)"}, {"name": "Representative & Complex Examples"}, {"name": "Setting Low/Zero Temperature for Facts"}, {"name": "Unit-Testing & Quantitative Evaluation (Precision, Recall, F1)"}, {"name": "Eyeballing Mini-KGs"}]}, {"name": "Comparison: Traditional NLP vs. LLMs", "children": [{"name": "Traditional NLP", "children": [{"name": "Pros: Fast predictions, lower cost/infra, offline security"}, {"name": "Cons: High annotation cost, complex pipelines, requires ML expertise"}]}, {"name": "LLM-Based Approach", "children": [{"name": "Pros: Rapid customization, low entry barrier, higher quality output"}, {"name": "Cons: Slower execution, high GPU/API cost, security/deployment hurdles"}]}, {"name": "Hybrid Coexistence", "children": [{"name": "LLMs used to preannotate data for NLP model training"}]}]}]};
+const H=42, GAPX=70, GAPY=18, TG=20;
+const view=document.getElementById('view'), stage=document.getElementById('stage'), svg=document.getElementById('svg');
+const ctx=document.createElement('canvas').getContext('2d'); ctx.font='15px system-ui,sans-serif';
+(function init(n,d){n.d=d;n.w=Math.ceil(ctx.measureText(n.name).width)+28;n.open=d<1;(n.children||[]).forEach(c=>init(c,d+1));})(DATA,0);
+let tx=40,ty=0,k=1;
+function apply(){stage.style.transform=`translate(${tx}px,${ty}px) scale(${k})`;}
+function render(){
+  stage.querySelectorAll('.node,.tg').forEach(e=>e.remove()); svg.innerHTML='';
+  const colW=[];(function m(n){colW[n.d]=Math.max(colW[n.d]||0,n.w);if(n.open)(n.children||[]).forEach(m);})(DATA);
+  const colX=[];let x=0;colW.forEach((w,i)=>{colX[i]=x;x+=w+GAPX+TG});
+  let row=0;
+  (function lay(n){
+    n.x=colX[n.d];
+    const kids=n.open&&n.children?n.children:[];
+    if(!kids.length){n.y=row*(H+GAPY);row++;}else{kids.forEach(lay);n.y=(kids[0].y+kids[kids.length-1].y)/2;}
+  })(DATA);
+  let paths='',maxX=0,maxY=0;
+  (function draw(n){
+    const el=document.createElement('div');el.className='node d'+n.d;el.textContent=n.name;
+    el.style.cssText+=`left:${n.x}px;top:${n.y}px;width:${colW[n.d]}px`;stage.appendChild(el);
+    maxX=Math.max(maxX,n.x+colW[n.d]+TG);maxY=Math.max(maxY,n.y+H);
+    if(n.children&&n.children.length){
+      const t=document.createElement('div');t.className='tg';t.textContent=n.open?'<':'>';
+      t.style.left=(n.x+colW[n.d]+8)+'px';t.style.top=(n.y+H/2-TG/2)+'px';
+      t.onclick=e=>{e.stopPropagation();n.open=!n.open;render();};stage.appendChild(t);
+      if(n.open)n.children.forEach(c=>{
+        const x1=n.x+colW[n.d]+8+TG,y1=n.y+H/2,x2=c.x,y2=c.y+H/2,mx=(x1+x2)/2;
+        paths+=`<path d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}"/>`;draw(c);});
+    }
+  })(DATA);
+  svg.innerHTML=paths;svg.setAttribute('width',maxX);svg.setAttribute('height',maxY);
+  stage.dataset.w=maxX;stage.dataset.h=maxY;
+}
+function fit(){
+  const w=+stage.dataset.w,h=+stage.dataset.h,vw=view.clientWidth,vh=view.clientHeight;
+  k=Math.min(1,(vw-80)/w,(vh-100)/h);tx=40;ty=(vh-h*k)/2;apply();
+}
+function zoom(f,cx=view.clientWidth/2,cy=view.clientHeight/2){
+  const nk=Math.max(.2,Math.min(3,k*f));tx=cx-(cx-tx)*nk/k;ty=cy-(cy-ty)*nk/k;k=nk;apply();
+}
+view.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY);},{passive:false});
+let drag=null;
+view.addEventListener('pointerdown',e=>{if(e.target.closest('.tg'))return;drag={x:e.clientX-tx,y:e.clientY-ty};view.classList.add('drag');view.setPointerCapture(e.pointerId);});
+view.addEventListener('pointermove',e=>{if(drag){tx=e.clientX-drag.x;ty=e.clientY-drag.y;apply();}});
+view.addEventListener('pointerup',()=>{drag=null;view.classList.remove('drag');});
+document.getElementById('zi').onclick=()=>zoom(1.2);
+document.getElementById('zo').onclick=()=>zoom(1/1.2);
+document.getElementById('fit').onclick=fit;
+let allOpen=false;
+document.getElementById('all').onclick=()=>{allOpen=!allOpen;(function s(n){if(n.children){n.open=allOpen||n.d===0;n.children.forEach(s);}})(DATA);render();fit();};
+render();fit();addEventListener('resize',fit);
+</script></body></html>

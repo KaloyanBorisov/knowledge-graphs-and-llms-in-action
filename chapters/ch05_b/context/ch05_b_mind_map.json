@@ -1,0 +1,184 @@
+{
+  "name": "Extracting Domain Knowledge from Unstructured Data",
+  "children": [
+    {
+      "name": "Knowledge Extraction Core Concepts",
+      "children": [
+        {
+          "name": "Knowledge Representation",
+          "children": [
+            {
+              "name": "Modeled information for autonomous access"
+            },
+            {
+              "name": "Organized and connected structured view"
+            }
+          ]
+        },
+        {
+          "name": "Knowledge Learning",
+          "children": [
+            {
+              "name": "Mines insights from documents"
+            },
+            {
+              "name": "Combines NLP and LLMs"
+            }
+          ]
+        },
+        {
+          "name": "Primary Tasks",
+          "children": [
+            {
+              "name": "Named Entity Recognition (NER)"
+            },
+            {
+              "name": "Relation Extraction (RE)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Archives Challenge (Use Case)",
+      "children": [
+        {
+          "name": "Rockefeller Archive Center (RAC) Data"
+        },
+        {
+          "name": "Unstructured Historical Documents & Diaries"
+        },
+        {
+          "name": "Goal",
+          "children": [
+            {
+              "name": "Understand grant-making processes"
+            },
+            {
+              "name": "Track research funding patterns and trends"
+            }
+          ]
+        },
+        {
+          "name": "Data Extraction Challenges",
+          "children": [
+            {
+              "name": "Shortcuts, abbreviations, and initials"
+            },
+            {
+              "name": "Domain-specific nomenclature"
+            },
+            {
+              "name": "Coreference resolution requirements"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LLMs for Knowledge Graph Building",
+      "children": [
+        {
+          "name": "Advantages of Generative Models",
+          "children": [
+            {
+              "name": "Transfer learning reduces data labeling needs"
+            },
+            {
+              "name": "Implicit coreference resolution"
+            },
+            {
+              "name": "Implicit entity normalization and expansion"
+            },
+            {
+              "name": "Single-pass extraction pipeline"
+            }
+          ]
+        },
+        {
+          "name": "Methodologies",
+          "children": [
+            {
+              "name": "Prompt-based Inference (Zero-shot / One-shot)"
+            },
+            {
+              "name": "Fine-tuning LLMs"
+            }
+          ]
+        },
+        {
+          "name": "Key Limitations",
+          "children": [
+            {
+              "name": "Hallucinations"
+            },
+            {
+              "name": "Prediction Instability"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prompt Engineering Best Practices",
+      "children": [
+        {
+          "name": "Iterative Prompt Development"
+        },
+        {
+          "name": "Clear Task Description & Domain Context"
+        },
+        {
+          "name": "Explicit Class Definitions (Entities & Relations)"
+        },
+        {
+          "name": "Representative & Complex Examples"
+        },
+        {
+          "name": "Setting Low/Zero Temperature for Facts"
+        },
+        {
+          "name": "Unit-Testing & Quantitative Evaluation (Precision, Recall, F1)"
+        },
+        {
+          "name": "Eyeballing Mini-KGs"
+        }
+      ]
+    },
+    {
+      "name": "Comparison: Traditional NLP vs. LLMs",
+      "children": [
+        {
+          "name": "Traditional NLP",
+          "children": [
+            {
+              "name": "Pros: Fast predictions, lower cost/infra, offline security"
+            },
+            {
+              "name": "Cons: High annotation cost, complex pipelines, requires ML expertise"
+            }
+          ]
+        },
+        {
+          "name": "LLM-Based Approach",
+          "children": [
+            {
+              "name": "Pros: Rapid customization, low entry barrier, higher quality output"
+            },
+            {
+              "name": "Cons: Slower execution, high GPU/API cost, security/deployment hurdles"
+            }
+          ]
+        },
+        {
+          "name": "Hybrid Coexistence",
+          "children": [
+            {
+              "name": "LLMs used to preannotate data for NLP model training"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
