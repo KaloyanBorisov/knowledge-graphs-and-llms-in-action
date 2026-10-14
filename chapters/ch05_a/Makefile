@@ -12,3 +12,13 @@ import:
 
 
 
+
+# --- Docker ---
+docker-up:
+	docker compose up -d neo4j
+
+docker-import:
+	docker compose run --rm --build importer
+
+docker-down:
+	docker compose down

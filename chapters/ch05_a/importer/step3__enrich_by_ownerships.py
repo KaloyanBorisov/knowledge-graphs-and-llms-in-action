@@ -1,3 +1,16 @@
+"""
+Step 3 - add ownership relationships between organizations (and their owners) using Wikidata.
+
+For every Organization that step 2 linked to Wikidata (has a wikidata_id) we ask which entities own it
+(Wikidata property P127 "owned by") and create
+    (org)-[:OWNED_BY_ORG]->(:Organization:Owner)
+    (org)-[:OWNED_BY_PER]->(:Person:Owner)
+so that the graph can answer questions such as "which parent company stands behind the organizations
+mentioned in this article?".
+
+Responses are cached per Wikidata id in data/cache_owners/<id>.json (same mechanism as step 2).
+Requires step 2 to have run, otherwise no Organization has a wikidata_id and nothing happens.
+"""
 import sys
 import time
 from pathlib import Path
@@ -11,16 +24,21 @@ from step2__enrich_organizations import query_wikidata_entity
 
 
 class OwnershipEnricher(BaseImporter):
+    """Looks up owners of already-linked organizations in Wikidata and stores them as graph relationships."""
+
     def __init__(self, argv):
         super().__init__(command=__file__, argv=argv)
         #self._database = "news"
         self.cache_folder = None
 
+        # Inputs: all organizations that step 2 successfully linked to Wikidata.
         self.QUERY_GET_INPUTS = """MATCH (e:Organization)
         WHERE e.wikidata_id IS NOT NULL
         RETURN id(e) AS id, e.name AS name, e.wikidata_id AS wikidata_id
         """
 
+        # Output: one write for the whole list ($inputs). Owner nodes are MERGEd by name and given the extra
+        # label :Owner so they can be found/filtered together regardless of being a Person or Organization.
         self.QUERY_STORE_RESULTS = """UNWIND $inputs AS input
         MATCH (n)
         WHERE id(n) = input.id
@@ -39,6 +57,13 @@ class OwnershipEnricher(BaseImporter):
         """
 
     def get_onwers_with_type(self, entity):
+        """
+        Fetch the owners of one organization together with the owner's type, in a single query.
+        :param entity: {"id": <node id>, "name": ..., "wikidata_id": "Q..."}
+        :return: {'id', 'owned_by_org': [names], 'owned_by_per': [names]} or None if Wikidata lists no owner
+        """
+        # wd:%s is the organization's Wikidata id; ?owned_by is the owner (P127) and ?owner_instance_of its
+        # type (P31). Q5 is "human", so type Q5 means the owner is a person, anything else an organization.
         SPARQL = """
         SELECT ?owned_by ?owned_byLabel ?owner_instance_of 
         WHERE {
@@ -49,17 +74,28 @@ class OwnershipEnricher(BaseImporter):
         results = query_wikidata_entity(SPARQL, entity["wikidata_id"], self.cache_folder)
         owned_by_org = []
         owned_by_per = []
+        # NOTE: r["owner_instance_of"] is a binding dict ({"type": "uri", "value": ...}), so comparing it
+        # directly to a string is never true, and the branches below are also swapped (a person goes into
+        # owned_by_org). As written, every owner ends up in owned_by_per. Left unchanged to match the book;
+        # a fix would be: r["owner_instance_of"]["value"] == ".../Q5" -> owned_by_per, else owned_by_org.
         for r in results:
             if r["owner_instance_of"] == "https://www.wikidata.org/entity/Q5":  # owner is person
                 owned_by_org.append(r["owned_byLabel"]["value"])
             else:
                 owned_by_per.append(r["owned_byLabel"]["value"])
         if len(results) > 0:
+            # result shape matches what QUERY_STORE_RESULTS expects
             return {'id': entity["id"],
                     'owned_by_org': owned_by_org,
                     'owned_by_per': owned_by_per}
+        # implicit return None when there is no owner; run() filters those out
         pass
 
+    # ---------------------------------------------------------------------------------------------
+    # get_owners() and disambiguate_owners() are an alternative, batched implementation (one SPARQL call
+    # for many entities, then a second call to classify the owners). They are only reachable from the dead
+    # code after `return` in run() and are kept as a reference.
+    # ---------------------------------------------------------------------------------------------
     @staticmethod
     def get_owners(entities: list):
         """
@@ -67,6 +103,7 @@ class OwnershipEnricher(BaseImporter):
         :param entities: list of entities represented as dictionaries
         :return: dictionary {<entity_node_id>: list(owners)}
         """
+        # build a SPARQL VALUES list: (wd:Q1) (wd:Q2) ...
         ents = " ".join([f"(wd:{x['wikidata_id']})" for x in entities])
         SPARQL = """
         SELECT ?org ?owned_by
@@ -89,6 +126,12 @@ class OwnershipEnricher(BaseImporter):
 
     @staticmethod
     def disambiguate_owners(entities: dict):
+        """
+        Second step of the batched alternative: classify every owner id as person (instance of Q5) or
+        organization and resolve its label.
+        :param entities: {node_id: [owner wikidata ids]} as returned by get_owners()
+        :return: list of {'id', 'owned_by_org', 'owned_by_per'} ready for QUERY_STORE_RESULTS
+        """
         # verify owner entity type (Organization or Person)
         ents = " ".join([f"(wd:{owner})" for x in entities.values() for owner in x])
         SPARQL = """
@@ -120,6 +163,7 @@ class OwnershipEnricher(BaseImporter):
         return final_res
 
     def run(self):
+        """Look up owners per organization (cached), then write all results to Neo4j in one query."""
         # Get entities to enrich
         with self._driver.session(database=self._database) as session:
             entities = session.run(self.QUERY_GET_INPUTS).data()
@@ -130,6 +174,8 @@ class OwnershipEnricher(BaseImporter):
                 if res is not None:
                     results.append(res)
             session.run(self.QUERY_STORE_RESULTS, inputs=results)
+            # The method ends here. Everything below is unreachable (kept from the book's earlier batched
+            # variant that uses get_owners/disambiguate_owners; it also never used its `batch` variable).
             return
 
             # run in batches
@@ -146,6 +192,7 @@ class OwnershipEnricher(BaseImporter):
 
 
 if __name__ == "__main__":
+    # Entry point: run last, after steps 1 and 2.
     enricher = OwnershipEnricher(argv=sys.argv[1:])
 
     # set up a cache folder for wikidata responses
