@@ -47,11 +47,12 @@ make docker-down     # stop (add -v to `docker compose down` to wipe the graph)
 ```
 
 The `importer` service reads the BBC articles from `../../data` and writes the Wikidata caches back to it.
-Two small demo services run the spaCy listings and show the result in a browser:
+Three small demo services run the spaCy listings and show the result in a browser:
 
 ```shell
 docker compose run --rm --service-ports depparse   # listing 5a.1 -> http://localhost:5000
 docker compose run --rm --service-ports nerdemo    # listing 5a.2 -> http://localhost:5001
+docker compose run --rm --service-ports rulerdemo # listing 5a.3 -> http://localhost:5002
 ```
 
 ### What the importer builds

@@ -61,5 +61,17 @@ services:
     volumes:
       - ./listings:/app/chapters/ch05_a/listings
 
+  # Runs the rule-based NER demo (listings/5a.3); entities highlighted at http://localhost:5002
+  #   docker compose run --rm --service-ports rulerdemo     (stop with Ctrl+C)
+  rulerdemo:
+    image: ch05_a-importer
+    profiles: ["run"]
+    working_dir: /app/chapters/ch05_a/listings
+    command: ["python", "5a.3 - Dictionary-based NER.py"]
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./listings:/app/chapters/ch05_a/listings
+
 volumes:
   neo4j_data:
