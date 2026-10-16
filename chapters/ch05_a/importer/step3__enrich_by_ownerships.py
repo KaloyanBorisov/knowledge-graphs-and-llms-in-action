@@ -72,17 +72,20 @@ class OwnershipEnricher(BaseImporter):
           SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
         }"""
         results = query_wikidata_entity(SPARQL, entity["wikidata_id"], self.cache_folder)
-        owned_by_org = []
-        owned_by_per = []
-        # NOTE: r["owner_instance_of"] is a binding dict ({"type": "uri", "value": ...}), so comparing it
-        # directly to a string is never true, and the branches below are also swapped (a person goes into
-        # owned_by_org). As written, every owner ends up in owned_by_per. Left unchanged to match the book;
-        # a fix would be: r["owner_instance_of"]["value"] == ".../Q5" -> owned_by_per, else owned_by_org.
+        # Each result row is one (owner, type) pair, so an owner with several types appears several times.
+        # Wikidata Q5 = "human": an owner with at least one Q5 row is a person, any other owner an organization.
+        # (The original book code compared the binding dict to a string and had the branches swapped, which
+        # put every owner into owned_by_per; fixed here.)
+        person_labels = {}
+        org_labels = {}
         for r in results:
-            if r["owner_instance_of"] == "https://www.wikidata.org/entity/Q5":  # owner is person
-                owned_by_org.append(r["owned_byLabel"]["value"])
+            label = r["owned_byLabel"]["value"]
+            if r["owner_instance_of"]["value"].endswith("/entity/Q5"):
+                person_labels[label] = True
             else:
-                owned_by_per.append(r["owned_byLabel"]["value"])
+                org_labels[label] = True
+        owned_by_per = list(person_labels)
+        owned_by_org = [x for x in org_labels if x not in person_labels]
         if len(results) > 0:
             # result shape matches what QUERY_STORE_RESULTS expects
             return {'id': entity["id"],

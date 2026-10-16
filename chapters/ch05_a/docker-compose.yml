@@ -1,6 +1,6 @@
 # Usage:  docker compose up -d neo4j   (browser: http://localhost:7474, login neo4j / password)
 #         docker compose run --rm importer   (runs the 3 import steps once Neo4j is healthy)
-# Then run the Cypher in listings/ (e.g. 6.11 - 6.16) in Neo4j Browser. GDS is installed for 6.13/6.14.
+# Then run the Cypher in listings/ (e.g. 5a.11 - 5a.16) in Neo4j Browser. GDS is installed for 5a.13/5a.14.
 name: ch05_a
 services:
   neo4j:
@@ -36,6 +36,30 @@ services:
       NEO4J_PASSWORD: password
     volumes:
       - ../../data:/app/data   # BBC dataset in, Wikidata caches (cache_org, cache_owners) written back
+
+  # Runs the spaCy dependency-parse demo (listings/5a.1) and serves the diagram at http://localhost:5000
+  #   docker compose run --rm --service-ports depparse     (stop with Ctrl+C)
+  depparse:
+    image: ch05_a-importer
+    profiles: ["run"]
+    working_dir: /app/chapters/ch05_a/listings
+    command: ["python", "5a.1 - NLP with dependency parsing.py"]
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./listings:/app/chapters/ch05_a/listings
+
+  # Runs the spaCy NER demo (listings/5a.2); entities highlighted at http://localhost:5001
+  #   docker compose run --rm --service-ports nerdemo     (stop with Ctrl+C)
+  nerdemo:
+    image: ch05_a-importer
+    profiles: ["run"]
+    working_dir: /app/chapters/ch05_a/listings
+    command: ["python", "5a.2 - NER pipeline.py"]
+    ports:
+      - "5001:5000"   # displaCy always listens on 5000 inside the container; host port differs so both demos can run
+    volumes:
+      - ./listings:/app/chapters/ch05_a/listings
 
 volumes:
   neo4j_data:

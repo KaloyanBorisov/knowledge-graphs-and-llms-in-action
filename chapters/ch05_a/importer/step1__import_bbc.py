@@ -248,7 +248,7 @@ class BBCKeywordImporter(BaseImporter):
     def import_keyword(self):
         # For each document create/reuse a Keyword node and link them. The TextRank score is kept on the
         # relationship (r.rank) because the same keyword has a different importance in each document.
-        # Later listings (6.11, 6.16) use these links to compute document similarity and community terms.
+        # Later listings (5a.11, 5a.16) use these links to compute document similarity and community terms.
         query_store_keywords = """
         UNWIND $batch AS item
         MATCH (n:Document)
