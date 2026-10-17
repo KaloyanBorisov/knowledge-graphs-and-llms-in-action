@@ -1,6 +1,6 @@
 # Setup:  cp .env.example .env  (then set OPENAI_API_KEY), then:  docker compose up -d --build
 # Starts a long-lived container (visible under Containers in Docker Desktop) to run the listings in:
-#   docker compose exec workbench python listing_3.py
+#   docker compose exec workbench python "5b.3 - OpenAI extraction runner.py"
 # One-shot alternative that is removed on exit:  docker compose run --rm extract
 name: ch05_b
 services:
@@ -11,7 +11,7 @@ services:
     command: sleep infinity
     env_file: .env
     volumes:
-      - ./listings:/app/listings   # edit listings (e.g. the prompt import in listing_3.py) without rebuilding
+      - ./listings:/app/listings   # edit listings (e.g. the prompt choice in 5b.3) without rebuilding
 
   extract:
     build: .

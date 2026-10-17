@@ -1,11 +1,25 @@
+import glob
+import importlib.util
 import os
 import time
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from listing_2 import prompt_segments
-#from listing_5 import prompt_segments
-#from listing_7 import prompt_segments
+# Prompt listing to use: 2 (baseline), 5 (schema) or 7 (domain-specific). Set it with the PROMPT environment
+# variable, e.g. `PROMPT=7 python "5b.3 - OpenAI extraction runner.py"`. The file names contain spaces and dots,
+# so the module is loaded by path instead of with a normal import.
+PROMPT_LISTING = os.environ.get("PROMPT", "2")
+
+
+def load_prompt_segments(listing: str) -> dict:
+    path = glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), f"5b.{listing} - *.py"))[0]
+    spec = importlib.util.spec_from_file_location(f"prompt_{listing}", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.prompt_segments
+
+
+prompt_segments = load_prompt_segments(PROMPT_LISTING)
 
 _ = load_dotenv()
 

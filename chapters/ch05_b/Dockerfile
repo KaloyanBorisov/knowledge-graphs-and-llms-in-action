@@ -5,4 +5,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY listings listings
 WORKDIR /app/listings
 # OPENAI_API_KEY comes from the environment at run time (see docker-compose.yml)
-CMD ["python", "listing_3.py"]
+CMD ["python", "5b.3 - OpenAI extraction runner.py"]

@@ -120,12 +120,12 @@ and describe each group by its characteristic terms.
   SET k.n_docs = n, k.doc_freq = 1.0 * n / total
   ```
 
-Exercise 3 (`exercises/exercise_3.txt`) is the same pipeline with cosine similarity instead of Jaccard (needs GDS).
+Exercise 3 (`exercises/Exercise 3 - Cypher - cosine similarity.txt`) is the same pipeline with cosine similarity instead of Jaccard (needs GDS).
 
 ### Exercises
 
-- **exercise_1.py** – extends listing 5a.3 with rules for job titles such as "Chief data officer" and "CEO"
+- **Exercise 1 - Job title NER rules.py** – extends listing 5a.3 with rules for job titles such as "Chief data officer" and "CEO"
   (token patterns and a regex).
-- **exercise_2.py** – queries Wikidata for a person's date of birth, occupations, fields of work and owned companies,
+- **Exercise 2 - Enrich persons from Wikidata.py** – queries Wikidata for a person's date of birth, occupations, fields of work and owned companies,
   to enrich `Person` nodes the way step 2 enriches organizations. It connects to `bolt://localhost:7687`, so with Docker
   it works from the host (port 7687 is published).

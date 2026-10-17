@@ -7,7 +7,7 @@ The book chapter is in [context/extracting-domain-knowledge-from-unstructured-da
 
 ## Getting started
 
-`listing_3.py` reads `OPENAI_API_KEY` from the environment or from a `.env` file. It calls the OpenAI API with the
+`5b.3 - OpenAI extraction runner.py` reads `OPENAI_API_KEY` from the environment or from a `.env` file. It calls the OpenAI API with the
 model `gpt-4o-mini`, so it needs internet access and spends tokens. Every run sends the diary text to OpenAI.
 
 ### With Docker (recommended)
@@ -18,7 +18,7 @@ The folder ships a [Dockerfile](Dockerfile) (`python:3.12-slim` plus `requiremen
 ```shell
 cp .env.example .env        # then set OPENAI_API_KEY=sk-... in .env
 make up                     # build the image and start the long-lived container
-make exec                   # run listing_3.py (baseline prompt, listing 2) in it
+make exec                   # run 5b.3 (baseline prompt, listing 2) in it
 make shell                  # bash inside the container
 make run                    # alternative: one-shot run in a throwaway container
 make down                   # stop and remove the stack
@@ -42,30 +42,24 @@ The Logs tab of a container shows only the output of its main process (PID 1). I
 output in the container log as well, redirect it into PID 1's stdout:
 
 ```shell
-docker compose exec workbench sh -c 'python listing_3.py > /proc/1/fd/1 2>&1'
+docker compose exec workbench sh -c 'python "5b.3 - OpenAI extraction runner.py" > /proc/1/fd/1 2>&1'
 docker compose logs workbench
 ```
 
-#### Running listings 5 and 7 without editing `listing_3.py`
+#### Running listings 5 and 7
 
-`listing_3.py` imports its prompt from `listing_2`. These commands swap the import on the fly in a temporary copy:
+The runner picks its prompt from the `PROMPT` environment variable (`2` by default, or `5` or `7`):
 
 ```shell
-# listing 5
-docker compose exec workbench sh -c \
-  "sed 's/^from listing_2 import/from listing_5 import/' listing_3.py > /tmp/run5.py && PYTHONPATH=/app/listings python /tmp/run5.py"
-
-# listing 7
-docker compose exec workbench sh -c \
-  "sed 's/^from listing_2 import/from listing_7 import/' listing_3.py > /tmp/run7.py && PYTHONPATH=/app/listings python /tmp/run7.py"
+docker compose exec -e PROMPT=5 workbench python "5b.3 - OpenAI extraction runner.py"
+docker compose exec -e PROMPT=7 workbench python "5b.3 - OpenAI extraction runner.py"
 ```
 
 To run all three and compare, save each output to a file on the host:
 
 ```shell
 for n in 2 5 7; do
-  docker compose exec -T workbench sh -c \
-    "sed 's/^from listing_2 import/from listing_$n import/' listing_3.py > /tmp/run$n.py && PYTHONPATH=/app/listings python /tmp/run$n.py" > out_$n.txt
+  docker compose exec -T -e PROMPT=$n workbench python "5b.3 - OpenAI extraction runner.py" > out_$n.txt
 done
 diff out_5.txt out_7.txt
 ```
@@ -77,21 +71,19 @@ Install the requirements (`openai`, `dotenv`, `requests`) into a virtual environ
 pip install -r requirements.txt
 echo "OPENAI_API_KEY=<your key>" > .env
 cd listings
-python listing_3.py
+python "5b.3 - OpenAI extraction runner.py"
 ```
 
-To switch the prompt, change the import at the top of `listing_3.py`:
-```python
-from listing_2 import prompt_segments
-#from listing_5 import prompt_segments
-#from listing_7 import prompt_segments
+To switch the prompt, set `PROMPT`:
+```shell
+PROMPT=7 python "5b.3 - OpenAI extraction runner.py"
 ```
 
 ## The listings in detail
 
-The numbering skips 4 and 6, because those listings in the book are not code files.
+The files are named `5b.<book listing number> - <purpose>.py`. The numbering skips 4 and 6, because those listings in the book are not code files.
 
-### listing_1.py: the UBIAI annotation API
+### 5b.1 (UBIAI annotation API): the UBIAI annotation API
 
 This is the "annotation service" approach to NER and relation extraction. The script:
 
@@ -103,7 +95,7 @@ This is the "annotation service" approach to NER and relation extraction. The sc
 `my_token = "XXX"` and the `<put your text here>` strings are placeholders, so the script cannot run as is. It needs
 a UBIAI account and has nothing to do with OpenAI or with listings 2 to 7.
 
-### listing_2.py: the baseline prompt
+### 5b.2 (baseline prompt): the baseline prompt
 
 Defines a `prompt_segments` dictionary with three keys:
 
@@ -118,7 +110,7 @@ Defines a `prompt_segments` dictionary with three keys:
 
 The model is told only the output format. It chooses the entity types and relations itself.
 
-### listing_3.py: the runner
+### 5b.3 (runner): the runner
 
 The only file with a `__main__` block. It:
 
@@ -130,7 +122,7 @@ The only file with a `__main__` block. It:
 - Uses a 1932 diary entry by Warren Weaver about the Johns Hopkins chemistry department as the sample text. It is full
   of abbreviations: "WW", "Dept.", "Prof. Chem.", "D.H. Andrews", "Assoc. in Chem.".
 
-### listing_5.py: the prompt with a schema
+### 5b.5 (prompt with a schema): the prompt with a schema
 
 Same output format and the same one-shot example as listing 2. Only `task` changes. It adds:
 
@@ -143,7 +135,7 @@ Same output format and the same one-shot example as listing 2. Only `task` chang
   "ANR" or "R."). Organizations are shortened too ("University of California" becomes "U. of Cal." or "U. Cal.",
   "Department of Physics" becomes "Dept. Phys.").
 
-### listing_7.py: the domain-specific prompt
+### 5b.7 (domain-specific prompt): the domain-specific prompt
 
 Builds on listing 5 with two changes:
 

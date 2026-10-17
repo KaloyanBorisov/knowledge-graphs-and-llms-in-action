@@ -15,7 +15,7 @@ run:
 
 # run in the long-lived container started by `make up`
 exec:
-	docker compose exec workbench python listing_3.py
+	docker compose exec workbench python "5b.3 - OpenAI extraction runner.py"
 
 shell:
 	docker compose exec workbench bash
