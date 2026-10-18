@@ -10,6 +10,36 @@ at the first line to match your configuration.
 make init
 ```
 
+#### Running with Docker
+
+No local Python environment is needed. Configure the LLM first (below), then from this folder:
+
+```shell
+make docker-up           # start Neo4j 5 + APOC + GDS (http://localhost:7474, neo4j / password); the importer container then runs the pipeline once
+make docker-logs         # follow / replay the importer log (the exited container keeps it)
+make docker-import       # run the pipeline again in a fresh importer container (safe to repeat)
+make docker-logs-neo4j   # follow the Neo4j log
+make docker-down         # stop (add -v to `docker compose down` to wipe the graph)
+```
+
+The `importer` container is a regular compose service, not a throw-away one: it stays in `docker ps -a` as `ch06-importer` 
+after it finishes, so its complete log can be read at any time with `docker logs ch06-importer`. 
+It reads the diaries and prompts from `../../data`, where it also reads and writes the LLM cache. 
+With the cache populated, no OpenAI key is needed. 
+Neo4j Community has no `NODE KEY` constraints, so the importer logs a warning and creates `IS UNIQUE` constraints instead.
+
+#### Configure the LLM
+The importer reads `OPENAI_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL` from a `.env` file in this folder, 
+which is git-ignored. Create it from the template and set your key (without quotes around values):
+```shell
+cp .env.example .env
+```
+
+`LOG_LEVEL` (`DEBUG`, `INFO`, `WARNING`, `ERROR`; default `INFO`) controls the importer's logging. 
+Logs are written to stdout, so they show up in `docker logs` / `docker compose logs -f`. 
+`INFO` shows every stage with its duration, per-page progress, cache hits, LLM token usage, the nodes and 
+relationships each Cypher statement changed, and graph totals after each stage; `DEBUG` adds the raw LLM answers.
+
 #### Import the datasets
 Run this command to execute the importer code for each dataset.
 ```shell
@@ -28,6 +58,26 @@ The caching mechanism is simple and tied to the name of the diary page identifie
 If the model or prompt is changed since the last time the cache was populated, the cache will not be invalidated, 
 and unmodified responses may be used. 
 In such scenarios, it is sufficient to remove the contents of the cache folder or copy them to another location.
+
+#### Importer code structure
+
+The importer in `importer/` is split by aspect. `ingest_and_process.py` is the entry point run by `make import`;
+see [importer/CALL_DIAGRAM.md](importer/CALL_DIAGRAM.md) for class, sequence and data-flow diagrams.
+
+| File | Aspect |
+|---|---|
+| `ingest_and_process.py` | Entry point only. `make import` runs it. |
+| `diaries_ingest.py` | Stage 1: constraints and indexes, plus loading `File` and `Page` nodes. |
+| `llm_extraction.py` | Stage 2: prompt loading, OpenAI call with caching, output parsing, and the retry pass. |
+| `graph_store.py` | Writes the raw LLM entities and relations, plus `cleanse_stability_test`. |
+| `entity_normalization.py` | Stage 3a: strips titles from person names and lowercases occupations. |
+| `entity_resolution.py` | Stage 3b: person de-duplication in five steps. |
+| `kg_builder.py` | Stage 3c: builds the final clean graph. |
+| `graph_analytics.py` | Stage 4: graph algorithms (components, centrality, communities, influencers). |
+| `full_kg.py` | `FullKG` combines the stage modules as mixins and sets the order of the stages. |
+| `kg_schema.py` | Static config: title list, rename maps and the allowed-relation schema. |
+| `pipeline_logging.py` | Logging setup (stdout, `LOG_LEVEL`), stage timing and the Cypher runner that logs Neo4j write counters. |
+| `CALL_DIAGRAM.md` | Class structure, call sequence, data flow and a who-calls-whom table. |
 
 ## Chapter at a glance
 

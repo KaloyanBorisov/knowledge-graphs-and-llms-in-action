@@ -1,0 +1,7 @@
+*
+!util
+!config.ini
+!chapters/ch06
+# never bake secrets or local artefacts into the image
+chapters/ch06/.env
+**/__pycache__
