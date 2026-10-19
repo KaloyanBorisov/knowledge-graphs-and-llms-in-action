@@ -79,6 +79,28 @@ see [importer/CALL_DIAGRAM.html](importer/CALL_DIAGRAM.html) for class, sequence
 | `pipeline_logging.py` | Logging setup (stdout, `LOG_LEVEL`), stage timing and the Cypher runner that logs Neo4j write counters. |
 | `CALL_DIAGRAM.html` | Class structure, call sequence, data flow and a who-calls-whom table. |
 
+#### Listings
+
+The files in [listings/](listings/) are small, standalone examples. 6.1 is a Python script, the rest are Cypher queries.
+Run the queries in the Neo4j Browser (http://localhost:7474, `neo4j` / `password`).
+Queries with a `$person` or `$occupation` placeholder need the value set first. Run the `:param` line in its **own frame**,
+then run the query in a second frame (mixing the two in one frame gives a syntax error).
+
+The database holds two graphs side by side: the **staging graph** (`Page`, `Entity`: everything the LLM said, unmerged)
+and the **final KG** (`Person`, `Organization`, `Occupation`, `Title`: cleaned and merged). Each raw `Entity` is linked to its
+clean node by a `MAPPED_TO_<LABEL>` edge, which is what listings 6.3-6.6 use to move between the two.
+
+| Listing | In plain English |
+|---|---|
+| **6.1** Normalization of persons and occupations | Cleans names before anything is merged. It drops a leading title from person names ("Dr. Hale" becomes "Hale") and lowercases occupations, and saves the result in a new field `name_normalized`. The original name is kept. |
+| **6.2** Influence network around a research topic | Pick a topic (for example `cyclotron`). The query finds the people who work on it, then the people around them: those who talked with them, talked about them, worked with them or studied under them, up to two steps away. It leaves out the diary author (WW), who is linked to everyone and would dominate the picture. Topics with a similar name, such as "cyclotron project", count too. The result is a drawing of who surrounds that research area. |
+| **6.3** Trace a person back to raw mentions and pages | Takes one clean person and shows every raw mention behind it, plus the diary page each one came from. You can see the name variants that were merged into one person ("E. O. Lawrence", "E.O. Lawrence", "Lawrence"). |
+| **6.4** Raw LLM relationships of a person | Shows everything the LLM said about a person, including relations that did not make it into the final KG because they are not in the allowed schema. |
+| **6.5** Trace a relationship back to its evidence | A relationship in the clean KG remembers which raw relations it was built from. This follows them back, so you can see how many mentions support it and what the LLM originally wrote. |
+| **6.6** Source mentions behind the influence network | Runs the 6.2 query to find the experts, then pulls in their raw mentions and diary pages. It answers "where in the diary does this network come from?". It is capped at 100 results so the browser stays responsive. |
+
+Typical use: start with 6.2 to find something interesting in the clean KG, then use 6.3-6.6 to check it against the original text.
+
 ## Chapter at a glance
 
 The visuals below summarize the chapter source material in [context/building-kgs-with-llms.pdf](context/building-kgs-with-llms.pdf).
