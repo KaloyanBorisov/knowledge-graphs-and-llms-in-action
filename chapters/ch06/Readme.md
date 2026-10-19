@@ -124,4 +124,4 @@ The mind map has five main branches:
 | **Value of KGs in the LLM Era** | Explainability, demystification (no black-box reliance), democratization (cheap, reusable graphs), explorability (global and drill-down views) and advanced analytics (GraphML). |
 
 These branches map directly to the code in this chapter: the importer in [importer/](importer/) builds the document and metagraph
-layers, and the listings in [listings/](listings/) normalize persons and occupations (6.1) and query the influence network (6.2).
+layers, and the listings in [listings/](listings/) normalize persons and occupations (6.1), query the influence network (6.2) and trace KG nodes and relationships back to the staging graph and diary pages (6.3-6.6).

@@ -1,0 +1,11 @@
+// Listing 6.2 finds the experts around a topic in the final KG; this one then pulls in
+// their raw mentions and diary pages from the staging graph.
+MATCH path = ()<-[:WORKS_ON|WORKS_FOR]-(p2:Person) -[:TALKED_ABOUT|TALKED_WITH|WORKS_WITH|STUDENT_OF*1..2]->
+(p:Person)-[:WORKS_ON]->()-[:SIMILAR_OCCUPATION*0..1]-(o:Occupation)
+WHERE o.name = toLower($occupation) AND NOT ANY(x IN nodes(path) WHERE x.name = "WW")
+WITH DISTINCT p
+MATCH raw = (p)<-[:MAPPED_TO_PERSON]-(:Entity)<-[:MENTIONS_ENTITY]-(:Page)
+RETURN raw
+LIMIT 100
+
+// :param occupation => 'cyclotron'

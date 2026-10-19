@@ -1,0 +1,7 @@
+// A KG relationship stores `orig_ids` (ids of the raw RELATED_TO_ENTITY edges it was built from)
+// and `count` (how many raw edges support it). This follows those ids back to the staging graph.
+MATCH (k:Person {name: $person})-[r:WORKS_ON]->(x:Occupation)
+MATCH ()-[raw:RELATED_TO_ENTITY]->() WHERE id(raw) IN r.orig_ids
+RETURN k.name, x.name, r.count AS supporting_mentions, raw.type_gpt AS what_the_llm_wrote
+
+// :param person => 'E. O. Lawrence'

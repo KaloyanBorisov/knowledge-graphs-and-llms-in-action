@@ -1,0 +1,7 @@
+// Staging-layer trace: clean KG node -> raw :Entity mentions -> source :Page.
+// Shows the name variants that entity resolution merged into one KG node.
+MATCH path = (k:Person {name: $person})<-[:MAPPED_TO_PERSON]-(e:Entity)<-[:MENTIONS_ENTITY]-(pg:Page)
+RETURN path
+
+// Example parameter (set it in its own frame in Neo4j Browser):
+//   :param person => 'E. O. Lawrence'

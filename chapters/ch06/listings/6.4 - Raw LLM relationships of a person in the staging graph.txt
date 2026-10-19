@@ -1,0 +1,10 @@
+// Everything the LLM extracted about a person, including relations the final KG dropped
+// (anything not listed in kg_schema.SCHEMA).
+MATCH path = (k:Person {name: $person})<-[:MAPPED_TO_PERSON]-(e1:Entity)-[r:RELATED_TO_ENTITY]->(e2:Entity)
+RETURN path
+
+// Tabular variant:
+//   MATCH (k:Person {name: $person})<-[:MAPPED_TO_PERSON]-(e1:Entity)-[r:RELATED_TO_ENTITY]->(e2:Entity)
+//   RETURN r.type AS rel, e2.name AS target, e2.label AS label, r.runs AS runs
+
+// :param person => 'E. O. Lawrence'
