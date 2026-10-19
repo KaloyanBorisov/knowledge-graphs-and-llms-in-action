@@ -62,7 +62,7 @@ In such scenarios, it is sufficient to remove the contents of the cache folder o
 #### Importer code structure
 
 The importer in `importer/` is split by aspect. `ingest_and_process.py` is the entry point run by `make import`;
-see [importer/CALL_DIAGRAM.md](importer/CALL_DIAGRAM.md) for class, sequence and data-flow diagrams.
+see [importer/CALL_DIAGRAM.html](importer/CALL_DIAGRAM.html) for class, sequence and data-flow diagrams.
 
 | File | Aspect |
 |---|---|
@@ -77,7 +77,7 @@ see [importer/CALL_DIAGRAM.md](importer/CALL_DIAGRAM.md) for class, sequence and
 | `full_kg.py` | `FullKG` combines the stage modules as mixins and sets the order of the stages. |
 | `kg_schema.py` | Static config: title list, rename maps and the allowed-relation schema. |
 | `pipeline_logging.py` | Logging setup (stdout, `LOG_LEVEL`), stage timing and the Cypher runner that logs Neo4j write counters. |
-| `CALL_DIAGRAM.md` | Class structure, call sequence, data flow and a who-calls-whom table. |
+| `CALL_DIAGRAM.html` | Class structure, call sequence, data flow and a who-calls-whom table. |
 
 ## Chapter at a glance
 

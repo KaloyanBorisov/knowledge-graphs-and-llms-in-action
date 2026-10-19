@@ -1,7 +1,7 @@
 """
 ingest_and_process.py - entry point of the chapter-6 pipeline (run via `make import`).
 
-The implementation is split by aspect into the modules below; see CALL_DIAGRAM.md
+The implementation is split by aspect into the modules below; see CALL_DIAGRAM.html
 for the full call graph.
 
     diaries_ingest.py        STAGE 1  DiariesImporter: schema + File/Page nodes

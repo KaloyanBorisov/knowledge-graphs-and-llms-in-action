@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importer Call Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow reading column; four stage cards, then two mechanism diagrams, then the caller table. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --fg: #1b2230;
+  --muted: #5b6577;
+  --line: #d6dbe4;
+  --s1: #2f6fdb; --s1-bg: #e7efff;
+  --s2: #7a4fd1; --s2-bg: #f0eaff;
+  --s3: #1f8a5b; --s3-bg: #e3f5ec;
+  --s4: #c2701a; --s4-bg: #fdf0e0;
+  --font-display: "Bricolage Grotesque", "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161f; --surface: #1a212d; --fg: #e6eaf2; --muted: #98a3b8; --line: #2d3748;
+  --s1: #6ea3ff; --s1-bg: #1a2a47;
+  --s2: #b394ff; --s2-bg: #2a2142;
+  --s3: #5fd09b; --s3-bg: #16322a;
+  --s4: #f0a65a; --s4-bg: #3a2a16;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11161f; --surface: #1a212d; --fg: #e6eaf2; --muted: #98a3b8; --line: #2d3748;
+  --s1: #6ea3ff; --s1-bg: #1a2a47;
+  --s2: #b394ff; --s2-bg: #2a2142;
+  --s3: #5fd09b; --s3-bg: #16322a;
+  --s4: #f0a65a; --s4-bg: #3a2a16;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 48px; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+p { margin: 0; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+.lede { color: var(--muted); max-width: 62ch; margin-top: 12px; }
+.entry { display: inline-flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 18px; font-family: var(--font-mono); font-size: 13px; }
+.entry span { background: var(--surface); border: 1px solid var(--line); padding: 4px 10px; border-radius: 4px; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sub { color: var(--muted); max-width: 66ch; }
+
+.stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.chip { align-self: flex-start; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; }
+.stage h3 { margin: 0; font-family: var(--font-display); font-size: 1.05rem; }
+.stage ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.stage li code { overflow-wrap: anywhere; }
+.stage .out { margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 12.5px; color: var(--muted); }
+.c1 .chip { background: var(--s1-bg); color: var(--s1); }
+.c2 .chip { background: var(--s2-bg); color: var(--s2); }
+.c3 .chip { background: var(--s3-bg); color: var(--s3); }
+.c4 .chip { background: var(--s4-bg); color: var(--s4); }
+.c1 { border-top: 3px solid var(--s1); } .c2 { border-top: 3px solid var(--s2); }
+.c3 { border-top: 3px solid var(--s3); } .c4 { border-top: 3px solid var(--s4); }
+
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.scroll svg { display: block; min-width: 640px; width: 100%; height: auto; }
+figcaption { margin-top: 12px; font-size: 13px; color: var(--muted); max-width: 70ch; }
+svg text { font-family: var(--font-body); fill: currentColor; }
+svg .m { font-family: var(--font-mono); font-size: 10.5px; fill: var(--muted); }
+svg .t { font-size: 12.5px; font-weight: 500; }
+svg .lbl { font-size: 11px; fill: var(--muted); }
+svg .box { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+svg .ln { stroke: currentColor; stroke-width: 1.4; fill: none; }
+svg .dash { stroke-dasharray: 5 4; }
+
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td.unused { color: var(--muted); font-style: italic; }
+</style>
+
+<main>
+  <header>
+    <h1>ch06 importer call map</h1>
+    <p class="lede">A full run reads diary pages from JSON, has an LLM extract entities from each page, cleans and merges those entities, builds a typed knowledge graph, then scores the people in it. The code is split by aspect, and <code>FullKG</code> is assembled from mixins that share one Neo4j driver.</p>
+    <div class="entry"><span>entry: ingest_and_process.py</span><span>run: make import</span></div>
+  </header>
+
+  <section>
+    <h2>Four stages of a run</h2>
+    <p class="sub">The entry script calls stage 1 and stage 4 itself. Stages 2 and 3 are both driven by one call, <code>build_kg(prompt_path)</code>.</p>
+    <div class="stages">
+      <article class="stage c1">
+        <span class="chip">Stage 1 · load</span>
+        <h3>Load pages</h3>
+        <ul>
+          <li><code>DiariesImporter(argv)</code></li>
+          <li><code>create_indices()</code></li>
+          <li><code>ingest_diaries(json)</code></li>
+          <li><code>count_diaries()</code>, <code>get_diaries()</code></li>
+          <li><code>batch_store()</code></li>
+        </ul>
+        <p class="out">(:File)-[:CONTAINS_PAGE]-&gt;(:Page)</p>
+      </article>
+      <article class="stage c2">
+        <span class="chip">Stage 2 · extract</span>
+        <h3>LLM extraction</h3>
+        <ul>
+          <li><code>read_prompt()</code></li>
+          <li><code>process_diaries_gpt()</code></li>
+          <li><code>openai_query()</code></li>
+          <li><code>parse_gpt_output()</code></li>
+          <li><code>store_to_neo4j()</code></li>
+        </ul>
+        <p class="out">Entity nodes and RELATED_TO_ENTITY; page marked :GPTProcessed</p>
+      </article>
+      <article class="stage c3">
+        <span class="chip">Stage 3 · build</span>
+        <h3>Normalise, resolve, create</h3>
+        <ul>
+          <li><code>normalize_entities()</code></li>
+          <li><code>resolve_entities()</code></li>
+          <li><code>create_kg()</code></li>
+        </ul>
+        <p class="out">Person, Organization, Occupation, Title with WORKS_FOR, TALKED_WITH and others</p>
+      </article>
+      <article class="stage c4">
+        <span class="chip">Stage 4 · analyse</span>
+        <h3>Graph analytics</h3>
+        <ul>
+          <li><code>run_gds()</code></li>
+          <li>project, WCC, largest component</li>
+          <li>PageRank, eigenvector, betweenness, Louvain</li>
+          <li>influencer projection</li>
+        </ul>
+        <p class="out">Person.wcc, pagerank, eigenvector, betweenness, community, pr_influencers</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>How FullKG is assembled</h2>
+    <figure>
+      <div class="scroll">
+        <svg viewBox="0 0 760 360" role="img" aria-label="FullKG inherits from BaseImporter and six mixins; two mixins read constants from kg_schema; DiariesImporter also inherits BaseImporter" style="color: var(--fg)">
+          <defs>
+            <marker id="tri" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+              <path d="M1 1 L9 5 L1 9 Z" fill="var(--bg)" stroke="currentColor" stroke-width="1.2"/>
+            </marker>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M1 1 L9 5 L1 9" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            </marker>
+          </defs>
+
+          <!-- BaseImporter + DiariesImporter -->
+          <rect class="box" x="10" y="150" width="140" height="56" rx="4"/>
+          <text class="t" x="80" y="174" text-anchor="middle">BaseImporter</text>
+          <text class="m" x="80" y="192" text-anchor="middle">driver, batch_store()</text>
+          <rect class="box" x="10" y="270" width="140" height="64" rx="4" style="stroke: var(--s1)"/>
+          <text class="t" x="80" y="292" text-anchor="middle">DiariesImporter</text>
+          <text class="m" x="80" y="310" text-anchor="middle">stage 1 only</text>
+          <text class="m" x="80" y="324" text-anchor="middle">diaries_ingest.py</text>
+          <line class="ln" x1="80" y1="270" x2="80" y2="207" marker-end="url(#tri)"/>
+
+          <!-- FullKG -->
+          <rect x="190" y="146" width="130" height="64" rx="4" style="fill: var(--s3-bg); stroke: var(--s3); stroke-width: 1.8"/>
+          <text class="t" x="255" y="172" text-anchor="middle">FullKG</text>
+          <text class="m" x="255" y="190" text-anchor="middle">build_kg()</text>
+          <line class="ln" x1="190" y1="178" x2="151" y2="178" marker-end="url(#tri)"/>
+
+          <!-- mixins -->
+          <g>
+            <rect class="box" x="380" y="8"   width="210" height="44" rx="4" style="stroke: var(--s2)"/><text class="t" x="392" y="26"  >LLMExtractionMixin</text><text class="m" x="392" y="42"  >openai_query, parse_gpt_output</text>
+            <rect class="box" x="380" y="64"  width="210" height="44" rx="4" style="stroke: var(--s2)"/><text class="t" x="392" y="82"  >GraphStoreMixin</text><text class="m" x="392" y="98"  >store_to_neo4j</text>
+            <rect class="box" x="380" y="120" width="210" height="44" rx="4" style="stroke: var(--s3)"/><text class="t" x="392" y="138" >EntityNormalizationMixin</text><text class="m" x="392" y="154" >normalize_entities</text>
+            <rect class="box" x="380" y="176" width="210" height="44" rx="4" style="stroke: var(--s3)"/><text class="t" x="392" y="194" >EntityResolutionMixin</text><text class="m" x="392" y="210" >resolve_entities</text>
+            <rect class="box" x="380" y="232" width="210" height="44" rx="4" style="stroke: var(--s3)"/><text class="t" x="392" y="250" >KGBuilderMixin</text><text class="m" x="392" y="266" >create_kg</text>
+            <rect class="box" x="380" y="288" width="210" height="44" rx="4" style="stroke: var(--s4)"/><text class="t" x="392" y="306" >GraphAnalyticsMixin</text><text class="m" x="392" y="322" >run_gds</text>
+          </g>
+          <g>
+            <line class="ln" x1="380" y1="30"  x2="321" y2="170" marker-end="url(#tri)"/>
+            <line class="ln" x1="380" y1="86"  x2="321" y2="174" marker-end="url(#tri)"/>
+            <line class="ln" x1="380" y1="142" x2="321" y2="177" marker-end="url(#tri)"/>
+            <line class="ln" x1="380" y1="198" x2="321" y2="181" marker-end="url(#tri)"/>
+            <line class="ln" x1="380" y1="254" x2="321" y2="184" marker-end="url(#tri)"/>
+            <line class="ln" x1="380" y1="310" x2="321" y2="188" marker-end="url(#tri)"/>
+          </g>
+
+          <!-- kg_schema -->
+          <rect class="box dash" x="632" y="150" width="120" height="86" rx="4"/>
+          <text class="t" x="692" y="172" text-anchor="middle">kg_schema</text>
+          <text class="m" x="692" y="190" text-anchor="middle">REMOVE_TITLES</text>
+          <text class="m" x="692" y="204" text-anchor="middle">RENAME_ENTS</text>
+          <text class="m" x="692" y="218" text-anchor="middle">RENAME_RELS</text>
+          <text class="m" x="692" y="232" text-anchor="middle">SCHEMA</text>
+          <line class="ln dash" x1="591" y1="142" x2="631" y2="170" marker-end="url(#arr)"/>
+          <line class="ln dash" x1="591" y1="254" x2="631" y2="220" marker-end="url(#arr)"/>
+          <text class="lbl" x="600" y="128">REMOVE_TITLES</text>
+          <text class="lbl" x="600" y="276">RENAME_*, SCHEMA</text>
+        </svg>
+      </div>
+      <figcaption>Hollow arrowheads mean inheritance. Dashed arrows mean a module reads constants from <code>kg_schema.py</code>. Border color matches the stage each mixin serves. <code>DiariesImporter</code> shares only the base class, so stage 1 never touches the LLM code.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Inside stage 2: one page, one LLM call</h2>
+    <figure>
+      <div class="scroll">
+        <svg viewBox="0 0 760 270" role="img" aria-label="For each unprocessed page, openai_query checks the cache, calls OpenAI, parse_gpt_output parses the reply, and good parses are stored; failures are retried once with a new cache key" style="color: var(--fg)">
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M1 1 L9 5 L1 9" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            </marker>
+          </defs>
+          <!-- cache -->
+          <rect class="box dash" x="150" y="8" width="130" height="44" rx="4"/>
+          <text class="t" x="215" y="28" text-anchor="middle">cache_llm/*.json</text>
+          <text class="m" x="215" y="44" text-anchor="middle">data folder</text>
+          <line class="ln dash" x1="215" y1="52" x2="215" y2="94" marker-end="url(#a2)"/>
+          <text class="lbl" x="223" y="76">hit: return cached JSON</text>
+
+          <!-- main row -->
+          <rect class="box" x="10" y="96" width="100" height="56" rx="4" style="stroke: var(--s1)"/>
+          <text class="t" x="60" y="120" text-anchor="middle">:Page</text>
+          <text class="m" x="60" y="138" text-anchor="middle">not :GPTProcessed</text>
+          <line class="ln" x1="111" y1="124" x2="149" y2="124" marker-end="url(#a2)"/>
+
+          <rect class="box" x="150" y="96" width="130" height="56" rx="4" style="stroke: var(--s2)"/>
+          <text class="t" x="215" y="120" text-anchor="middle">openai_query</text>
+          <text class="m" x="215" y="138" text-anchor="middle">cache check first</text>
+          <line class="ln" x1="281" y1="124" x2="329" y2="124" marker-end="url(#a2)"/>
+          <text class="lbl" x="305" y="114" text-anchor="middle">miss</text>
+
+          <rect class="box" x="330" y="96" width="100" height="56" rx="4"/>
+          <text class="t" x="380" y="120" text-anchor="middle">OpenAI API</text>
+          <text class="m" x="380" y="138" text-anchor="middle">chat.completions</text>
+          <line class="ln" x1="431" y1="124" x2="469" y2="124" marker-end="url(#a2)"/>
+
+          <rect class="box" x="470" y="96" width="120" height="56" rx="4" style="stroke: var(--s2)"/>
+          <text class="t" x="530" y="120" text-anchor="middle">parse_gpt_output</text>
+          <text class="m" x="530" y="138" text-anchor="middle">JSON to entities</text>
+          <line class="ln" x1="591" y1="124" x2="629" y2="124" marker-end="url(#a2)"/>
+          <text class="lbl" x="610" y="114" text-anchor="middle">ok</text>
+
+          <rect class="box" x="630" y="96" width="120" height="56" rx="4" style="stroke: var(--s2)"/>
+          <text class="t" x="690" y="120" text-anchor="middle">store_to_neo4j</text>
+          <text class="m" x="690" y="138" text-anchor="middle">entities + relations</text>
+
+          <!-- failure + retry -->
+          <line class="ln" x1="530" y1="153" x2="530" y2="196" marker-end="url(#a2)"/>
+          <text class="lbl" x="538" y="180">failed</text>
+          <rect class="box" x="470" y="198" width="120" height="48" rx="4" style="stroke: var(--s4)"/>
+          <text class="t" x="530" y="220" text-anchor="middle">retry list</text>
+          <text class="m" x="530" y="236" text-anchor="middle">after all pages</text>
+          <polyline class="ln" points="469,222 215,222 215,154" marker-end="url(#a2)"/>
+          <text class="lbl" x="340" y="214" text-anchor="middle">retry once, cache key + "_retry"</text>
+          <polyline class="ln dash" points="591,222 690,222 690,154" marker-end="url(#a2)"/>
+          <text class="lbl" x="600" y="262">store whatever parsed</text>
+        </svg>
+      </div>
+      <figcaption>Every page goes through the top row. A page whose reply cannot be parsed waits until all pages are done, then gets one more attempt under a separate cache key, so the failed reply is not served from cache again. Whatever the retry parses is stored.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Who calls whom</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Caller</th><th>Callee</th><th>Module</th></tr></thead>
+        <tbody>
+          <tr><td><code>__main__</code></td><td><code>DiariesImporter.__init__</code> then <code>create_indices</code></td><td>diaries_ingest</td></tr>
+          <tr><td><code>__main__</code></td><td><code>ingest_diaries</code> then <code>count_diaries</code>, <code>get_diaries</code>, <code>batch_store</code></td><td>diaries_ingest</td></tr>
+          <tr><td><code>__main__</code></td><td><code>FullKG.build_kg</code></td><td>full_kg</td></tr>
+          <tr><td><code>build_kg</code></td><td><code>read_prompt</code></td><td>llm_extraction</td></tr>
+          <tr><td><code>build_kg</code></td><td><code>process_diaries_gpt</code></td><td>llm_extraction</td></tr>
+          <tr><td><code>process_diaries_gpt</code></td><td><code>openai_query</code>, <code>parse_gpt_output</code>, <code>store_to_neo4j</code></td><td>llm_extraction, graph_store</td></tr>
+          <tr><td><code>build_kg</code></td><td><code>normalize_entities</code></td><td>entity_normalization</td></tr>
+          <tr><td><code>build_kg</code></td><td><code>resolve_entities</code></td><td>entity_resolution</td></tr>
+          <tr><td><code>build_kg</code></td><td><code>create_kg</code></td><td>kg_builder</td></tr>
+          <tr><td><code>__main__</code></td><td><code>run_gds</code></td><td>graph_analytics</td></tr>
+          <tr><td class="unused">not called</td><td class="unused"><code>cleanse_stability_test</code></td><td class="unused">graph_store</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
