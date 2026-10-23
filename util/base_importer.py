@@ -1,9 +1,38 @@
 import math
+import sys
 from itertools import islice
 from typing import Iterable
 
 from util.graphdb_base import GraphDBBase
-from tqdm import tqdm
+from tqdm import tqdm as _tqdm
+
+
+class _LineWriter:
+    """Writes each progress update as its own line: docker logs only shows lines ended by a newline,
+    and tqdm redraws with carriage returns only."""
+
+    def __init__(self, stream):
+        self._stream = stream
+
+    def write(self, text):
+        text = text.strip("\r\n ")
+        if text:
+            self._stream.write(text + "\n")
+            self._stream.flush()
+
+    def flush(self):
+        self._stream.flush()
+
+    def __getattr__(self, name):
+        return getattr(self._stream, name)
+
+
+def tqdm(iterable, **kwargs):
+    """tqdm with line-based, throttled output when stderr is not a terminal (docker logs, CI)"""
+    if not sys.stderr.isatty():
+        kwargs.setdefault("file", _LineWriter(sys.stderr))
+        kwargs.setdefault("mininterval", 30)
+    return _tqdm(iterable, **kwargs)
 
 
 class BaseImporter(GraphDBBase):

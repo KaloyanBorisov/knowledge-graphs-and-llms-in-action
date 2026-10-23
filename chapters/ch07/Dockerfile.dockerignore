@@ -1,0 +1,8 @@
+*
+!util
+!config.ini
+!chapters/ch07
+# never bake secrets or local artefacts into the image
+chapters/ch07/.env
+**/__pycache__
+**/.ipynb_checkpoints

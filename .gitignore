@@ -39,3 +39,6 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Downloaded datasets (ch07 OCR'd documents, SNOMED, UMLS; several GB)
+dataset/

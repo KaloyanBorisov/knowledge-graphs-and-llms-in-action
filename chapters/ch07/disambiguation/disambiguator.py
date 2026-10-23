@@ -12,7 +12,7 @@ class Disambiguator(BaseImporter):
     def __init__(self, argv):
         super().__init__(command=__file__, argv=argv)
         self._database = "ned"
-        self.batch_size = 50
+        self.batch_size = 10  # the book uses 50, but big batches exhaust Neo4j transaction memory on the full dataset
         self.entity_extractor: EntityExtractor = None
 
     def setupEntityExtractor(self, metathesaurus_file):

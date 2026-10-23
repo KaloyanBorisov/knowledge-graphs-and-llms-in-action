@@ -14,10 +14,12 @@ make init
 
 #### Download the datasets
 Run this command to create a `dataset` folder at the repository root folder containing 
-the raw data required.
+the raw data required: the SNOMED and UMLS ontologies and the OCR'd JSON pages (a ~2 GB download that
+unpacks to ~6 GB in `dataset/ocred_documents/`).
 ```shell
 make download
 ```
+This is `make download-ontologies` (SNOMED, UMLS) plus `make download-ocr` (the OCR'd pages), which you can run separately.
 
 #### Import the datasets
 Run this command to execute the importer code for each dataset.
@@ -25,32 +27,32 @@ Run this command to execute the importer code for each dataset.
 make import
 ```
 
-### Notes for Mac Users
-If you're having trouble installing libraries related to scispacy, you can run the code from this chapter via a Docker container by following these steps:
+### Run everything with Docker
+If you're having trouble installing libraries related to scispacy, or you just want a
+ready-made environment, `docker-compose.yml` starts Neo4j, runs the scripts and serves the notebook.
+Neo4j Enterprise (evaluation licence) is used because the chapter needs a separate `ned` database.
 
-#### Create a Suitable Container 
-Create an ephemeral container called venv_ch5:
-
+1. Create the config file and set your UMLS API key in `APIKEY`:
 ```bash
-docker run -e NEO4J_URI=bolt://host.docker.internal:7687 -e PYTHONPATH=../../ \
-       -w /work/chapters/ch07 -d -it --name venv_ch9 -v $PWD/../../:/work python:3.9-slim
+cp .env.example .env
 ```
-This command assumes you'll use a Neo4j instance running on your local machine. 
-The container will mount this repository under `/work` and set the working directory accordingly.
-
-#### Update the Makefile
-Change the first lines of the Makefile to:
-
-```makefile
-PIP=docker exec -it venv_ch9 pip  
-PYTHON=docker exec -it venv_ch9 python
-```
-
-#### Run the Make Commands
-Now you can run the make commands as usual:
+2. Download the SNOMED and UMLS files and the OCR'd JSON pages (~2 GB, unpacks to ~6 GB in `dataset/ocred_documents/`) into the `dataset` folder at the repository root (once):
 ```bash
-make init     # Install required libraries inside the container
-make download # Download datasets (data will be available within the container)
-make import   # Execute the import in the container (data will be written to the Neo4j instance on your local machine)
-make disambiguate # Execute disambiguation within the container (data will be written to the Neo4j instance on your local machine)
+docker compose build pipeline && docker compose run --rm download
 ```
+3. Start Neo4j and run the pipeline (import, then disambiguation). It runs once and takes a long time:
+```bash
+docker compose up -d --build
+docker logs -f ch07-pipeline
+```
+The first disambiguation run also downloads about 1 GB of scispacy UMLS linker data (kept in a Docker volume).
+Resource notes: Neo4j is configured with a 10 GB heap, so the machine needs roughly 16 GB of RAM. Disambiguation processes
+the pages in batches of 10 (the book uses 50): larger batches exceed Neo4j's transaction memory on the full dataset. On the
+27,609 pages it takes about 1.5 hours. Progress bars are written as lines, so `docker logs -f ch07-pipeline` shows them.
+4. Open the notebook at http://localhost:8888 :
+```bash
+docker compose --profile notebook up -d notebook
+```
+Neo4j Browser is at http://localhost:7474 (login `neo4j` / `password`). To run the pipeline again use
+`docker compose up -d --force-recreate pipeline`, and `docker compose --profile notebook down` stops everything.
+The same steps are available as `make docker-download`, `docker-up`, `docker-logs`, `docker-notebook` and `docker-down`.

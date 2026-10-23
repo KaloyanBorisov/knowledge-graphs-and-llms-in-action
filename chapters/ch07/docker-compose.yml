@@ -1,0 +1,82 @@
+# Setup:  cp .env.example .env  (set APIKEY, only needed for the download step)
+# Usage:  docker compose build pipeline && docker compose run --rm download      (once: fetches SNOMED + UMLS into ../../dataset; OCR'd JSON pages go in ../../dataset/ocred_documents)
+#         docker compose up -d --build          (starts Neo4j; the pipeline starts once it is healthy: import + disambiguate, runs once)
+#         docker logs -f ch07-pipeline          (pipeline log; the stopped container and its log are kept after it finishes)
+#         docker compose up -d --force-recreate pipeline   (run the pipeline again)
+#         docker compose --profile notebook up -d notebook (JupyterLab with analysis/ch07.ipynb: http://localhost:8888)
+# Neo4j browser: http://localhost:7474, login neo4j / password
+# Neo4j Enterprise (evaluation licence) is required: the chapter uses a separate `ned` database, which Community lacks.
+name: ch07
+services:
+  neo4j:
+    image: neo4j:5.26.4-enterprise
+    container_name: ch07-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_ACCEPT_LICENSE_AGREEMENT: eval
+      NEO4J_AUTH: neo4j/password            # matches ../../config.ini
+      # APOC (text/path), Graph Data Science (degree, projections) and Neosemantics (HPO RDF import)
+      NEO4J_PLUGINS: '["apoc", "graph-data-science", "n10s"]'
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*,gds.*,n10s.*"
+      NEO4J_dbms_security_procedures_allowlist: "apoc.*,gds.*,n10s.*"
+      NEO4J_server_memory_heap_max__size: 10G
+      NEO4J_db_memory_transaction_total_max: 8G   # the NED ingest batches (50 pages) exceed the default cap (70% of heap)
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+
+  pipeline:
+    build:
+      context: ../..
+      dockerfile: chapters/ch07/Dockerfile
+    image: ch07
+    container_name: ch07-pipeline
+    restart: "no"   # run the pipeline once; the exited container (and its logs) stays visible in `docker ps -a`
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: password
+    volumes:
+      - ../../dataset:/app/dataset
+      - scispacy_cache:/cache/scispacy
+
+  notebook:
+    image: ch07
+    container_name: ch07-notebook
+    profiles: ["notebook"]
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: password
+    ports:
+      - "8888:8888"
+    working_dir: /app/chapters/ch07/analysis
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --IdentityProvider.token= --ServerApp.password=
+    volumes:
+      - ./analysis:/app/chapters/ch07/analysis   # edits to the notebook are saved on the host
+
+  download:
+    image: ch07
+    profiles: ["download"]
+    environment:
+      APIKEY: ${APIKEY:-}
+    command: make download
+    volumes:
+      - ../../dataset:/app/dataset
+
+volumes:
+  neo4j_data:
+  scispacy_cache:
